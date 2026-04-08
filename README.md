@@ -54,3 +54,10 @@ Visit `http://127.0.0.1:5000`.
 ## Cost
 
 Each contract analysis costs approximately $0.01–$0.03 using Claude Sonnet, depending on document length.
+
+## Screenshots
+
+![Upload page](assets/Screenshot%202026-04-08%20at%2011.59.17.png)
+![Results page](assets/Screenshot%202026-04-08%20at%2011.59.43.png)
+![About page](assets/Screenshot%202026-04-08%20at%2011.59.56.png)
+![Word export](assets/Screenshot%202026-04-08%20at%2012.00.18.png)
