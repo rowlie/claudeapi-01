@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contract Analyser</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <span class="wordmark">CONTRACT ANALYSER</span>
+    </div>
+    <div class="tab-bar">
+      <div class="tab-bar-inner">
+        <a href="/" class="tab tab-active">Analyse</a>
+        <a href="/about" class="tab">About</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="upload-page">
+    <div class="upload-card">
+      <h1>Analyse a Contract</h1>
+      <p class="subtitle">Upload a PDF contract and receive a structured analysis including parties, key dates, obligations, and risk assessment.</p>
+
+      {% if error %}
+      <div class="alert">{{ error }}</div>
+      {% endif %}
+
+      <form method="POST" action="/analyse" enctype="multipart/form-data" id="upload-form">
+        <div class="drop-zone" id="drop-zone">
+          <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="12" y1="18" x2="12" y2="12"/>
+            <line x1="9" y1="15" x2="15" y2="15"/>
+          </svg>
+          <p id="drop-label">Drag &amp; drop your PDF here, or <label for="contract" class="file-link">browse</label></p>
+          <p class="file-note">PDF files only</p>
+          <input type="file" id="contract" name="contract" accept=".pdf" required>
+        </div>
+
+        <button type="submit" class="btn-primary" id="submit-btn">
+          <span id="btn-text">Analyse Contract</span>
+          <span id="btn-loading" hidden>
+            <span class="spinner"></span> Analysing&hellip;
+          </span>
+        </button>
+      </form>
+    </div>
+  </main>
+
+  <footer>
+    <p>Powered by Claude AI &mdash; For review purposes only. Not legal advice.</p>
+  </footer>
+
+  <script>
+    const dropZone = document.getElementById('drop-zone');
+    const input = document.getElementById('contract');
+    const dropLabel = document.getElementById('drop-label');
+
+    input.addEventListener('change', () => {
+      if (input.files[0]) {
+        dropLabel.textContent = input.files[0].name;
+        dropZone.classList.add('has-file');
+      }
+    });
+
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('drag-over');
+      if (e.dataTransfer.files[0]) {
+        input.files = e.dataTransfer.files;
+        dropLabel.textContent = e.dataTransfer.files[0].name;
+        dropZone.classList.add('has-file');
+      }
+    });
+
+    document.getElementById('upload-form').addEventListener('submit', () => {
+      document.getElementById('btn-text').hidden = true;
+      document.getElementById('btn-loading').hidden = false;
+      document.getElementById('submit-btn').disabled = true;
+    });
+  </script>
+</body>
+</html>

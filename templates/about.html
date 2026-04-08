@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About &mdash; Contract Analyser</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <span class="wordmark">CONTRACT ANALYSER</span>
+    </div>
+    <div class="tab-bar">
+      <div class="tab-bar-inner">
+        <a href="/" class="tab">Analyse</a>
+        <a href="/about" class="tab tab-active">About</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="about-page">
+    <div class="about-content">
+
+      <section class="card about-card">
+        <h2>What this does</h2>
+        <p>A user uploads a PDF contract and the app extracts the raw text and sends it to the Anthropic Claude API. Claude reads the contract and returns a validated JSON object containing the parties, governing law, contract term, key dates, obligations, a plain-English summary, and a list of risk clauses each rated high, medium, or low severity. The app then renders that JSON as a human-readable summary card and a colour-coded risk panel, and makes the same data available as a downloadable Word document.</p>
+      </section>
+
+      <section class="card about-card">
+        <h2>How the pipeline works</h2>
+        <ol class="pipeline-list">
+          <li>
+            <span class="step-number">01</span>
+            <div>
+              <strong>Text extraction</strong>
+              <p>pypdf reads the uploaded PDF and extracts the raw text content, page by page, into a single string.</p>
+            </div>
+          </li>
+          <li>
+            <span class="step-number">02</span>
+            <div>
+              <strong>Structured extraction via Claude</strong>
+              <p>The text is sent to the Anthropic Claude API in a single API call. A strict system prompt instructs Claude to read the contract and return only a JSON object conforming to a defined schema — no prose, no markdown. Claude's only job is to read the contract and return structured data.</p>
+            </div>
+          </li>
+          <li>
+            <span class="step-number">03</span>
+            <div>
+              <strong>JSON parsing</strong>
+              <p>Python parses the response with <code>json.loads</code>. If the response is not valid JSON the request fails explicitly rather than silently degrading.</p>
+            </div>
+          </li>
+          <li>
+            <span class="step-number">04</span>
+            <div>
+              <strong>Rendering</strong>
+              <p>Flask passes the parsed dictionary to a Jinja2 template which renders two outputs from the same data: a structured summary panel on the left and a colour-coded risk clause panel on the right.</p>
+            </div>
+          </li>
+          <li>
+            <span class="step-number">05</span>
+            <div>
+              <strong>Word document export</strong>
+              <p>The same JSON stored in the session is passed to python-docx, which writes it into a formatted <code>.docx</code> file served directly for download — demonstrating how a single extraction feeds multiple downstream output formats.</p>
+            </div>
+          </li>
+        </ol>
+      </section>
+
+      <section class="card about-card">
+        <h2>Why this architecture</h2>
+
+        <div class="why-block">
+          <h3>Single API call rather than a conversation</h3>
+          <p>Contract analysis is a stateless transformation. The full document is available upfront, the required output schema is fixed, and there is no iterative reasoning that benefits from multiple turns. A single call with a well-constructed system prompt is more predictable, cheaper, and easier to debug than a multi-turn agentic loop. Every run produces the same output format from the same input.</p>
+        </div>
+
+        <div class="why-block">
+          <h3>Structured JSON rather than free prose</h3>
+          <p>Enforcing a strict schema in the system prompt means Claude's output is directly machine-readable without heuristics or post-processing. The app calls <code>json.loads</code> and either gets a clean dictionary or raises an exception — there is no ambiguous middle state. This also makes the output trivially portable: the same JSON renders in the browser, exports to Word, and could be written to a database or sent to a downstream API without any transformation layer.</p>
+        </div>
+
+        <div class="why-block">
+          <h3>Claude handles extraction only — Python handles everything else</h3>
+          <p>Rendering, routing, file generation, and session management are all handled by Python. Claude is not asked to format output for display, make decisions about presentation, or produce anything other than data. This separation keeps the AI layer narrow and replaceable: the extraction prompt can be swapped or the model updated without touching the application logic, and the application logic can evolve without changing the prompt.</p>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <footer>
+    <p>Powered by Claude AI &mdash; For review purposes only. Not legal advice.</p>
+  </footer>
+</body>
+</html>

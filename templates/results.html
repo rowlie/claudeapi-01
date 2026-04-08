@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analysis Results &mdash; Contract Analyser</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <span class="wordmark">CONTRACT ANALYSER</span>
+      <nav>
+        <a href="/" class="nav-link">&#8592; New Analysis</a>
+        <a href="/download" class="btn-download">Download .docx</a>
+      </nav>
+    </div>
+    <div class="tab-bar">
+      <div class="tab-bar-inner">
+        <a href="/" class="tab">Analyse</a>
+        <a href="/about" class="tab">About</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="results-page">
+    <div class="results-grid">
+
+      <!-- LEFT PANEL: Summary -->
+      <div class="panel panel-left">
+
+        <section class="card">
+          <h2>Summary</h2>
+          <p class="summary-text">{{ data.summary }}</p>
+        </section>
+
+        <section class="card">
+          <h2>Parties</h2>
+          <ul class="tag-list">
+            {% for party in data.parties %}
+            <li class="tag">{{ party }}</li>
+            {% endfor %}
+          </ul>
+        </section>
+
+        <div class="meta-grid">
+          <section class="card meta-card">
+            <h3>Governing Law</h3>
+            <p>{{ data.governing_law or "Not specified" }}</p>
+          </section>
+          <section class="card meta-card">
+            <h3>Contract Term</h3>
+            <p>{% if data.term_months %}{{ data.term_months }} months{% else %}Not specified{% endif %}</p>
+          </section>
+        </div>
+
+        {% if data.key_dates %}
+        <section class="card">
+          <h2>Key Dates</h2>
+          <table class="dates-table">
+            <tbody>
+              {% for kd in data.key_dates %}
+              <tr>
+                <td class="date-label">{{ kd.label }}</td>
+                <td class="date-value">{{ kd.date }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </section>
+        {% endif %}
+
+        {% if data.obligations %}
+        <section class="card">
+          <h2>Key Obligations</h2>
+          <ul class="obligation-list">
+            {% for ob in data.obligations %}
+            <li>{{ ob }}</li>
+            {% endfor %}
+          </ul>
+        </section>
+        {% endif %}
+
+      </div>
+
+      <!-- RIGHT PANEL: Risk Clauses -->
+      <div class="panel panel-right">
+        <div class="risk-header">
+          <h2>Risk Clauses</h2>
+          <div class="risk-legend">
+            <span class="legend-dot high"></span>High
+            <span class="legend-dot medium"></span>Medium
+            <span class="legend-dot low"></span>Low
+          </div>
+        </div>
+
+        {% if data.risk_clauses %}
+          {% for rc in data.risk_clauses %}
+          <div class="risk-card risk-{{ rc.severity }}">
+            <div class="risk-card-header">
+              <span class="risk-type">{{ rc.type }}</span>
+              <span class="risk-badge risk-badge-{{ rc.severity }}">{{ rc.severity | upper }}</span>
+            </div>
+            <p class="risk-text">{{ rc.text }}</p>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="card">
+            <p class="muted">No significant risk clauses identified.</p>
+          </div>
+        {% endif %}
+      </div>
+
+    </div>
+  </main>
+
+  <footer>
+    <p>Powered by Claude AI &mdash; For review purposes only. Not legal advice.</p>
+  </footer>
+</body>
+</html>
